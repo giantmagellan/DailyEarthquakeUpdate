@@ -1,32 +1,57 @@
-// earthquake json url
-url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson";
+// --------------------------------------
+// Import data into JS
+// --------------------------------------
 
-// Performs a GET request to the query URL
+// earthquake json url
+url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
+
+// Performs GET request to the query URL
 d3.json(url, function(data) {
-    // Sends the data.features object to the createFeatures function
+    // Sends data.features object to the createFeatures function
     createFeatures(data.features);
   });
 
+// --------------------------------------
+// Features and Popups for Earthquakes
+// --------------------------------------
 function createFeatures(earthquakeData) {
 
-  layer.bindPopup("<h3>" + feature.properties.place +
-  "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+  function onEachFeature(feature, layer) {
+    layer.bindPopup("<h3>" + feature.properties.place +
+      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" +
+      "<p>" + "Magnitude" + " " + feature.properties.mag + "</p>");
+  }
 
+  function pointToLayer(geoJsonPoint, latlng) {
+    return L.circleMarker(latlng);
+  }
 
-    // onEachFeature: (feature, layer) => {
-    //   layer.push(layer);
-    // }
+  function style(geoJsonFeature) {
+    return {
+      fillColor: "yellow",
+      color: "royalblue",
+      weight: 1.5,
+      fillOpacity: 0.3, 
+      radius: markerSize(geoJsonFeature.properties.mag / 1.5)
+    }
+  }
 
   var earthquakes = L.geoJSON(earthquakeData, {
-      onEachFeature: onEachFeature
+      onEachFeature: onEachFeature,
+      pointToLayer: pointToLayer,
+      style: style
     });
   
-    // Sending earthquakes layer to createMap function
+    // Sends earthquakes layer to createMap function
     createMap(earthquakes);
 }
 
-function markerSize(magnitude) {
-  return magnitude * 15;
+// --------------------------------------
+// Circles with varied radii
+// --------------------------------------
+
+function markerSize(earthquakeData) {
+  return earthquakeData * 15;
 }
 
 // Arrays to hold created markers
@@ -46,15 +71,10 @@ for (var j = 0; j < features.length; j++) {
   );
 }
 
+// --------------------------------------
+// Function to create earthquake map
+// --------------------------------------
 function createMap(earthquakes) {
-
-  var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  maxZoom: 18,
-  id: "mapbox.streets",
-  accessToken: API_KEY
-  });
-
 
   var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
@@ -63,13 +83,37 @@ function createMap(earthquakes) {
   accessToken: API_KEY
   });
 
+  var outdoors = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
+  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  maxZoom: 18,
+  id: "mapbox.outdoors",
+  accessToken: API_KEY
+  });
+
+  var satellite = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
+  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  maxZoom: 18,
+  id: "mapbox.satellite",
+  accessToken: API_KEY
+  });
+
+  // var grayscale = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
+  //   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  //   maxZoom: 18,
+  //   id: "mapbox.grayscale",
+  //   accessToken: API_KEY
+  //   });
+
   // Layer groups
   var quakes = L.layerGroup(quakeMarkers);
 
   // BaseMaps object to hold base layer
   var baseMaps = {
-    "Street Map": streetmap,
-    "Dark Map": darkmap
+    // "Street Map": streetmap,
+    "Dark Map": darkmap,
+    "Outdoors": outdoors,
+    "Satellite": satellite
+    // "Grayscale": grayscale
   };
 
   // Overlay object to hold overlay layer
@@ -80,12 +124,22 @@ function createMap(earthquakes) {
   // Inital map object with central coordinates at Las Vegas, NV
   var lvMap = L.map("map", {
       center: [36.17, -115.14],
-      zoom: 13,
-      layers: [streetmap, earthquakes]
+      zoom: 5,
+      layers: [darkmap, earthquakes]
     });
+
+  // Outdoors map
+  // var mapOutdoors = new mapboxgl.Map({
+  //   container: 'map',
+  //   style: 'mapbox://styles/mapbox/streets-v11'
+  //   });
 
   L.control.layers(baseMaps, overlayMaps, {
       collapsed: false
     }).addTo(lvMap);
+
+  var legend = L.control({position: "bottomright"});
+
+
     
 }
