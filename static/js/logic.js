@@ -28,7 +28,7 @@ function createFeatures(earthquakeData) {
 
   function style(geoJsonFeature) {
     return {
-      fillColor: getColor,
+      fillColor: getColor(geoJsonFeature.properties.mag),
       color: "royalblue",
       weight: 1.5,
       fillOpacity: .25, 
@@ -41,13 +41,13 @@ function createFeatures(earthquakeData) {
       case magnitude > 5:
         return "purple";
       case magnitude > 4:
-        return "blue";
+        return "royalblue";
       case magnitude > 3:
-        return "orange";
+        return "lightblue";
       case magnitude > 2:
         return "yellow";
       case magnitude > 1:
-        return "red";
+        return "green";
       default:
         return "pink";
     }
@@ -73,20 +73,6 @@ function markerSize(earthquakeData) {
 
 // Arrays to hold created markers
 var quakeMarkers = [];
-
-// // Loop through each feature to create earthquake markers based on magnitude and locations
-// for (var j = 0; j < features.length; j++) {
-//   // setting marker radius for the location by passing the magnitude into the markerSize function
-//   quakeMarkers.push(
-//     L.circle(features[j].geometry.coordinates, {
-//       stroke: false,
-//       fillOpacity: 0.75,
-//       color: "white",
-//       fillColor: "white",
-//       radius: markerSize(features[j].properties.mag)
-//     })
-//   );
-// }
 
 // --------------------------------------
 // Function to create earthquake map
@@ -114,12 +100,6 @@ function createMap(earthquakes) {
   accessToken: API_KEY
   });
 
-  // var grayscale = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-  //   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  //   maxZoom: 18,
-  //   id: "mapbox.grayscale",
-  //   accessToken: API_KEY
-  //   });
 
   // Layer groups
   var quakes = L.layerGroup(quakeMarkers);
@@ -157,7 +137,4 @@ function createMap(earthquakes) {
 
   var legend = L.control({position: "bottomright"});
   
-  legend.onAdd
-
-    
 }
