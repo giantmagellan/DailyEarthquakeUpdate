@@ -39,19 +39,20 @@ function createFeatures(earthquakeData) {
   function getColor(magnitude) {
     switch(true) {
       case magnitude > 5:
-        return "purple";
+        return "#12c2e9";
       case magnitude > 4:
-        return "royalblue";
+        return "#c471ed";
       case magnitude > 3:
-        return "lightblue";
+        return "#f64f59";
       case magnitude > 2:
-        return "yellow";
+        return "#b92b27";
       case magnitude > 1:
-        return "green";
+        return "#1565C0";
       default:
-        return "pink";
+        return "#373B44";
     }
   }
+  
 
   var earthquakes = L.geoJSON(earthquakeData, {
       onEachFeature: onEachFeature,
@@ -68,7 +69,7 @@ function createFeatures(earthquakeData) {
 // --------------------------------------
 
 function markerSize(earthquakeData) {
-  return earthquakeData * 15;
+  return earthquakeData * 12;
 }
 
 // Arrays to hold created markers
@@ -100,8 +101,9 @@ function createMap(earthquakes) {
   accessToken: API_KEY
   });
 
-
-  // Layer groups
+  // --------------------------------------
+  // Layers, Basemaps, and Overlay Objects
+  // --------------------------------------
   var quakes = L.layerGroup(quakeMarkers);
 
   // BaseMaps object to hold base layer
@@ -122,19 +124,37 @@ function createMap(earthquakes) {
   var lvMap = L.map("map", {
       center: [36.17, -115.14],
       zoom: 5,
-      layers: [darkmap, earthquakes]
+      layers: [darkmap, quakes, earthquakes]
     });
 
-  // Outdoors map
-  // var mapOutdoors = new mapboxgl.Map({
-  //   container: 'map',
-  //   style: 'mapbox://styles/mapbox/streets-v11'
-  //   });
 
   L.control.layers(baseMaps, overlayMaps, {
       collapsed: false
     }).addTo(lvMap);
 
+  // --------------------------------------
+  // Legend
+  // --------------------------------------
   var legend = L.control({position: "bottomright"});
   
+  legend.onAdd = function(lvmap) {
+    var div = L.DomUtil.create('div', 'info legend')
+    grades = [0, 1, 2, 3, 4, 5]
+    
+    div.innerHTML += '<i style="background: #373B44"></i><span>0-1</span><br>';
+    div.innerHTML += '<i style="background: #1565C0"></i><span>1-2</span><br>';
+    div.innerHTML += '<i style="background: #b92b27"></i><span>2-3</span><br>';
+    div.innerHTML += '<i style="background: #f64f59"></i><span>3-4</span><br>';
+    div.innerHTML += '<i style="background: #c471ed"></i><span>4-5</span><br>';
+    div.innerHTML += '<i style="background: #12c2e9"></i><span>5-6</span><br>';
+
+    // for (var i = 0; i < grades.length; i++) {
+    //   div.innerHTML += ‘<i style=”background:’ + getColor(grades[i] + 1) + ‘”></i> ‘ + grades[i] + (grades[i + 1] ? ‘&ndash;’ + grades[i + 1] + ‘<br>’ : ‘+’);
+    //   }
+    
+
+    return div;
+  };
+
+  legend.addTo(lvMap);
 }
