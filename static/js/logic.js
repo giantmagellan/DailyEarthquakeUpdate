@@ -28,11 +28,28 @@ function createFeatures(earthquakeData) {
 
   function style(geoJsonFeature) {
     return {
-      fillColor: "yellow",
+      fillColor: getColor,
       color: "royalblue",
       weight: 1.5,
-      fillOpacity: 0.3, 
+      fillOpacity: .25, 
       radius: markerSize(geoJsonFeature.properties.mag / 1.5)
+    }
+  }
+
+  function getColor(magnitude) {
+    switch(true) {
+      case magnitude > 5:
+        return "purple";
+      case magnitude > 4:
+        return "blue";
+      case magnitude > 3:
+        return "orange";
+      case magnitude > 2:
+        return "yellow";
+      case magnitude > 1:
+        return "red";
+      default:
+        return "pink";
     }
   }
 
@@ -57,19 +74,19 @@ function markerSize(earthquakeData) {
 // Arrays to hold created markers
 var quakeMarkers = [];
 
-// Loop through each feature to create earthquake markers based on magnitude and locations
-for (var j = 0; j < features.length; j++) {
-  // setting marker radius for the location by passing the magnitude into the markerSize function
-  quakeMarkers.push(
-    L.circle(features[j].geometry.coordinates, {
-      stroke: false,
-      fillOpacity: 0.75,
-      color: "white",
-      fillColor: "white",
-      radius: markerSize(features[j].properties.mag)
-    })
-  );
-}
+// // Loop through each feature to create earthquake markers based on magnitude and locations
+// for (var j = 0; j < features.length; j++) {
+//   // setting marker radius for the location by passing the magnitude into the markerSize function
+//   quakeMarkers.push(
+//     L.circle(features[j].geometry.coordinates, {
+//       stroke: false,
+//       fillOpacity: 0.75,
+//       color: "white",
+//       fillColor: "white",
+//       radius: markerSize(features[j].properties.mag)
+//     })
+//   );
+// }
 
 // --------------------------------------
 // Function to create earthquake map
@@ -139,7 +156,8 @@ function createMap(earthquakes) {
     }).addTo(lvMap);
 
   var legend = L.control({position: "bottomright"});
-
+  
+  legend.onAdd
 
     
 }
